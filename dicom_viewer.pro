@@ -28,13 +28,15 @@ SOURCES += \
         main.cpp \
         dicom_viewer.cpp \
         image_label.cpp \
-        double_slider.cpp
+        double_slider.cpp \
+        file_slider.cpp
 
 
 HEADERS += \
         dicom_viewer.h \
         image_label.h \
-        double_slider.h
+        double_slider.h \
+        file_slider.h
 
 LIBS += \
         -ldcmdata \

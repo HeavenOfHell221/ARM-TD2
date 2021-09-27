@@ -1,12 +1,11 @@
-#include "double_slider.h"
+#include "file_slider.h"
 
 #include <QHBoxLayout>
 #include <cmath>
 #include <sstream>
 
-FileSlider::FileSlider(const QString &slider_name, double min_val,
-                           double max_val, QWidget *parent, int nb_steps)
-    : QWidget(parent), min_val(min_val), max_val(max_val) {
+FileSlider::FileSlider(const QString &slider_name, int file_nb, QWidget *parent)
+    : QWidget(parent), file_nb(file_nb) {
   QSizePolicy size_policy;
   size_policy.setVerticalPolicy(QSizePolicy::Fixed);
   size_policy.setHorizontalPolicy(QSizePolicy::Minimum);
@@ -15,7 +14,7 @@ FileSlider::FileSlider(const QString &slider_name, double min_val,
   name_label = new QLabel(slider_name);
   slider = new QSlider(Qt::Horizontal);
   slider->setMinimum(0);
-  slider->setMaximum(nb_steps);
+  slider->setMaximum(file_nb);
   value_label = new QLabel("value");
   layout->addWidget(name_label);
   layout->addWidget(slider);
@@ -27,42 +26,25 @@ FileSlider::FileSlider(const QString &slider_name, double min_val,
 
 FileSlider::~FileSlider() {}
 
-double FileSlider::value() { return innerToValue(slider->value()); }
+int FileSlider::value() { return slider->value(); }
 
-void FileSlider::setValue(double new_value) {
-  slider->setValue(valueToInner(new_value));
+void FileSlider::setValue(int new_value) {
+  slider->setValue(new_value);
 }
 
-void FileSlider::setLimits(double min, double max) {
-  double new_value = value();
-  min_val = min;
-  max_val = max;
-  if (min_val > new_value)
-    new_value = min_val;
-  if (max_val < new_value)
-    new_value = max_val;
-  slider->setValue(valueToInner(new_value));
+void FileSlider::setLimits(int file_nb) {
+  file_nb = file_nb;
+  slider->setValue(1);
   updateValueLabel();
 }
 
 void FileSlider::onSliderChanged(int new_value) {
-  double value = innerToValue(new_value);
   updateValueLabel();
-  emit valueChanged(value);
+  emit valueChanged(new_value);
 }
 
 void FileSlider::updateValueLabel() {
   std::ostringstream oss;
-  oss << value() << " [" << min_val << "," << max_val << "]";
+  oss << value() << "File number : " << file_nb;
   value_label->setText(QString(oss.str().c_str()));
-}
-
-double FileSlider::innerToValue(int slider_value) {
-  return min_val + (max_val - min_val) * slider_value / slider->maximum();
-}
-
-int FileSlider::valueToInner(double value) {
-  double delta = value - min_val;
-  double range = max_val - min_val;
-  return std::round(delta / range * slider->maximum());
 }

@@ -22,9 +22,10 @@ DicomViewer::DicomViewer(QWidget *parent)
   // Using default values for limits, they are updated anyway once a file is loaded
   window_center_slider = new DoubleSlider("Window center", -1000.0, 1000.0);
   window_width_slider = new DoubleSlider("Window width", 1.0, 5000.0);
-  window_width_slider = new FileSlider("Current file", 1.0, 5000.0);
+  file_finder_slider = new FileSlider("Current file", 1);
   layout->addWidget(window_center_slider);
   layout->addWidget(window_width_slider);
+  layout->addWidget(file_finder_slider);
   layout->addWidget(img_label);
   widget->setLayout(layout);
   // Setting menu
@@ -41,6 +42,7 @@ DicomViewer::DicomViewer(QWidget *parent)
   // Sliders connection
   connect(window_center_slider, SIGNAL(valueChanged(double)), this, SLOT(onWindowCenterChange(double)));
   connect(window_width_slider, SIGNAL(valueChanged(double)), this, SLOT(onWindowWidthChange(double)));
+  //connect(file_finder_slider, SIGNAL(valueChanged(int)), this, SLOT(onDisplayedFileChange(int)));
   DcmRLEDecoderRegistration::registerCodecs();
   DJDecoderRegistration::registerCodecs();
 }
@@ -92,6 +94,7 @@ void DicomViewer::openDicom() {
 
   loadDicomImage();
   updateWindowSliders();
+  //applyDefaultFile();
   applyDefaultWindow();
   updateImage();
 }
@@ -148,6 +151,10 @@ void DicomViewer::onWindowWidthChange(double new_window_width) {
   (void)new_window_width;
   updateImage();
 }
+void DicomViewer::onDisplayedFileChange(int new_displayed_file) {
+  curr_file = new_displayed_file;
+  updateImage();
+}
 
 DcmDataset *DicomViewer::getDataset() { return getDataset(curr_file); }
 DcmDataset *DicomViewer::getDataset(int id) { return active_files[id].getDataset(); }
@@ -180,6 +187,10 @@ void DicomViewer::loadDicomImage() {
 void DicomViewer::applyDefaultWindow() {
   window_center_slider->setValue(getWindowCenter());
   window_width_slider->setValue(getWindowWidth());
+}
+
+void DicomViewer::applyDefaultFile() {
+  file_finder_slider->setValue(1);
 }
 
 void DicomViewer::updateImage() {

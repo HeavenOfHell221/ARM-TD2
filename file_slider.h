@@ -1,5 +1,5 @@
-#ifndef DOUBLE_SLIDER_H
-#define DOUBLE_SLIDER_H
+#ifndef FILE_SLIDER_H
+#define FILE_SLIDER_H
 
 #include <QLabel>
 #include <QSlider>
@@ -8,21 +8,20 @@
 class FileSlider : public QWidget {
   Q_OBJECT
 public:
-  FileSlider(const QString &slider_name, double min_val, double max_val,
-               QWidget *parent = 0, int nb_steps = 1000);
+  FileSlider(const QString &slider_name, int file_nb, QWidget *parent = 0);
   ~FileSlider();
 
-  void setLimits(double min, double max);
+  void setLimits(int file_nb);
 
-  double value();
+  int value();
 
-  void setValue(double new_value);
+  void setValue(int new_value);
 
 public slots:
   void onSliderChanged(int new_value);
 
 signals:
-  void valueChanged(double new_value);
+  void valueChanged(int new_value);
 
 private:
   QLayout *layout;
@@ -30,12 +29,9 @@ private:
   QSlider *slider;
   QLabel *value_label;
 
-  double min_val;
-  double max_val;
+  int file_nb;
 
   void updateValueLabel();
-  double innerToValue(int slider_value);
-  int valueToInner(double value);
 };
 
-#endif // DOUBLE_SLIDER_H
+#endif // FILE_SLIDER_H

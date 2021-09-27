@@ -9,6 +9,7 @@
 
 #include "double_slider.h"
 #include "image_label.h"
+#include "file_slider.h"
 
 class DicomViewer : public QMainWindow {
   Q_OBJECT
@@ -24,14 +25,14 @@ public slots:
 
   void onWindowCenterChange(double new_window_center);
   void onWindowWidthChange(double new_window_width);
+  void onDisplayedFileChange(int new_displayed_file);
 
 private:
   QWidget *widget;
   QVBoxLayout *layout;
   DoubleSlider *window_center_slider;
   DoubleSlider *window_width_slider;
-  
-  DFilelider *file_finder_slider;
+  FileSlider *file_finder_slider;
   /// The area in which the image is shown
   ImageLabel *img_label;
 
@@ -60,6 +61,8 @@ private:
 
   /// Import the default parameters from the DicomImage
   void applyDefaultWindow();
+
+  void applyDefaultFile();
 
   /// Update the image based on current status of the object
   void updateImage();
