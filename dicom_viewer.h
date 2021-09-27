@@ -47,6 +47,7 @@ private:
 
   /// Retrieve access to the dataset of current file
   DcmDataset *getDataset();
+  DcmDataset *getDataset(int id);
 
   /// Adjust the size of the window based on file content
   void updateWindowSliders();
@@ -64,6 +65,7 @@ private:
   /// Retrieve patient name from active file
   /// return 'FAIL' if no active file is found
   std::string getPatientName();
+  std::string getPatientName(int id);
 
   /// Retrieve image from active file, converting to appropriate transfer syntax
   /// return nullptr on failure
@@ -88,7 +90,11 @@ private:
   double getWindowMax();
 
   std::string getInstanceNumber();
+  std::string getInstanceNumber(int id);
   std::string getAcquisitionNumber();
+  std::string getAcquisitionNumber(int id);
+
+  int BinarySearch(std::vector<int> list, int value);
 };
 
 template <typename T> T getField(DcmItem *item, const DcmTagKey &tag_key);

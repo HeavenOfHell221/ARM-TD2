@@ -51,6 +51,8 @@ void DicomViewer::openDicom() {
 
   active_files.clear();
   curr_file = 0;
+  std::vector<int> ids;
+  std::string patientName;
 
   for (int i = 0; i < fileNames.length(); i++) {
       std::string path = fileNames[i].toStdString();
@@ -61,15 +63,48 @@ void DicomViewer::openDicom() {
         QMessageBox::critical(this, "Failed to open file", path.c_str());
         return;
       }
-      // TODO: Check if image is the one after the previous one
+
+      if (i == 0)
+          patientName = getPatientName(0);
+      else if (patientName != getPatientName(i)) {
+          std::cerr << "File #" << ids[i] << " (" << path << ") doesn't have the same patient!" << std::endl;
+          return;
+      }
+
+      int val = atoi(getInstanceNumber(i).c_str());
+      int index = BinarySearch(ids, val);
+      ids.insert(ids.begin() + index, val);
   }
 
-  std::cout << "Images loaded: " << active_files.size() << std::endl;
+  for (int i = 1; i < fileNames.length() - 1; i++) {
+      if (ids[i] == ids[i - 1] || ids[i] == ids[i + 1]) {
+          std::cerr << "Duplicate element #" << ids[i] << std::endl;
+          return;
+      } else if (ids[i] != ids[i - 1] + 1) {
+          std::cerr << "Missing element #" << ids[i] + 1 << " (we have #" << ids[i] << ")" << std::endl;
+          return;
+      } else if (ids[i] != ids[i + 1] - 1) {
+          std::cerr << "Missing element #" << ids[i] << " (we have #" << ids[i] - 1 << ")" << std::endl;
+          return;
+      }
+  }
 
   loadDicomImage();
   updateWindowSliders();
   applyDefaultWindow();
   updateImage();
+}
+
+int DicomViewer::BinarySearch(std::vector<int> list, int value) {
+    int min = 0;
+    int max = list.size() - 1;
+    while (min <= max) {
+        int v = floor((min + max) / 2);
+        if (list[v] < value)      min = v + 1;
+        else if (list[v] > value) max = v - 1;
+        else                      return v;
+    }
+    return min;
 }
 
 void DicomViewer::save() {
@@ -113,7 +148,8 @@ void DicomViewer::onWindowWidthChange(double new_window_width) {
   updateImage();
 }
 
-DcmDataset *DicomViewer::getDataset() { return active_files[curr_file].getDataset(); }
+DcmDataset *DicomViewer::getDataset() { return getDataset(curr_file); }
+DcmDataset *DicomViewer::getDataset(int id) { return active_files[id].getDataset(); }
 
 void DicomViewer::updateWindowSliders() {
   double min_used_value, max_used_value;
@@ -157,9 +193,8 @@ void DicomViewer::updateImage() {
   img_label->setImg(getQImage());
 }
 
-std::string DicomViewer::getPatientName() {
-  return getField<std::string>(getDataset(), DCM_PatientName);
-}
+std::string DicomViewer::getPatientName() { return getPatientName(curr_file); }
+std::string DicomViewer::getPatientName(int id) { return getField<std::string>(getDataset(id), DCM_PatientName); }
 
 DicomImage *DicomViewer::getDicomImage() { return image; }
 
@@ -227,12 +262,11 @@ double DicomViewer::getWindowMax() {
   return getWindowCenter() + getWindowWidth() / 2;
 }
 
-std::string DicomViewer::getInstanceNumber() {
-  return getField<std::string>(getDataset(), 0x20, 0x13);
-}
-std::string DicomViewer::getAcquisitionNumber() {
-  return getField<std::string>(getDataset(), 0x20, 0x12);
-}
+std::string DicomViewer::getInstanceNumber() { return getInstanceNumber(curr_file); }
+std::string DicomViewer::getInstanceNumber(int id) { return getField<std::string>(getDataset(id), 0x20, 0x13); }
+
+std::string DicomViewer::getAcquisitionNumber() { return getAcquisitionNumber(curr_file); }
+std::string DicomViewer::getAcquisitionNumber(int id) { return getField<std::string>(getDataset(id), 0x20, 0x12); }
 
 template <> double getField<double>(DcmItem *item, const DcmTagKey &tag_key) {
   double value;
