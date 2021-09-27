@@ -22,6 +22,7 @@ DicomViewer::DicomViewer(QWidget *parent)
   // Using default values for limits, they are updated anyway once a file is loaded
   window_center_slider = new DoubleSlider("Window center", -1000.0, 1000.0);
   window_width_slider = new DoubleSlider("Window width", 1.0, 5000.0);
+  window_width_slider = new FileSlider("Current file", 1.0, 5000.0);
   layout->addWidget(window_center_slider);
   layout->addWidget(window_width_slider);
   layout->addWidget(img_label);

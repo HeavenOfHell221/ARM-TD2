@@ -30,6 +30,8 @@ private:
   QVBoxLayout *layout;
   DoubleSlider *window_center_slider;
   DoubleSlider *window_width_slider;
+  
+  DFilelider *file_finder_slider;
   /// The area in which the image is shown
   ImageLabel *img_label;
 
