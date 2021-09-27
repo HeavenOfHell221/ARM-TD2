@@ -42,7 +42,7 @@ DicomViewer::DicomViewer(QWidget *parent)
   // Sliders connection
   connect(window_center_slider, SIGNAL(valueChanged(double)), this, SLOT(onWindowCenterChange(double)));
   connect(window_width_slider, SIGNAL(valueChanged(double)), this, SLOT(onWindowWidthChange(double)));
-  //connect(file_finder_slider, SIGNAL(valueChanged(int)), this, SLOT(onDisplayedFileChange(int)));
+  connect(file_finder_slider, SIGNAL(valueChanged(int)), this, SLOT(onDisplayedFileChange(int)));
   DcmRLEDecoderRegistration::registerCodecs();
   DJDecoderRegistration::registerCodecs();
 }
@@ -94,7 +94,7 @@ void DicomViewer::openDicom() {
 
   loadDicomImage();
   updateWindowSliders();
-  //applyDefaultFile();
+  applyDefaultFileSlider();
   applyDefaultWindow();
   updateImage();
 }
@@ -166,6 +166,11 @@ void DicomViewer::updateWindowSliders() {
   window_width_slider->setLimits(1.0, max_used_value - min_used_value);
 }
 
+void updateDefaultFileSlider() {
+  int file_nb = ;
+  file_finder_slider->setLimits(file_nb);
+}
+
 void DicomViewer::loadDicomImage() {
   DcmDataset *dataset = getDataset();
   if (dataset == nullptr) {
@@ -189,7 +194,7 @@ void DicomViewer::applyDefaultWindow() {
   window_width_slider->setValue(getWindowWidth());
 }
 
-void DicomViewer::applyDefaultFile() {
+void DicomViewer::applyDefaultFileSlider() {
   file_finder_slider->setValue(1);
 }
 

@@ -13,7 +13,7 @@ FileSlider::FileSlider(const QString &slider_name, int file_nb, QWidget *parent)
   layout = new QHBoxLayout(this);
   name_label = new QLabel(slider_name);
   slider = new QSlider(Qt::Horizontal);
-  slider->setMinimum(0);
+  slider->setMinimum(1);
   slider->setMaximum(file_nb);
   value_label = new QLabel("value");
   layout->addWidget(name_label);
@@ -45,6 +45,6 @@ void FileSlider::onSliderChanged(int new_value) {
 
 void FileSlider::updateValueLabel() {
   std::ostringstream oss;
-  oss << value() << "File number : " << file_nb;
+  oss << value();
   value_label->setText(QString(oss.str().c_str()));
 }
