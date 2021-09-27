@@ -32,8 +32,8 @@ void FileSlider::setValue(int new_value) {
   slider->setValue(new_value);
 }
 
-void FileSlider::setLimits(int file_nb) {
-  file_nb = file_nb;
+void FileSlider::setLimits(int file_nb1) {
+  file_nb = file_nb1;
   slider->setValue(1);
   updateValueLabel();
 }
@@ -45,6 +45,6 @@ void FileSlider::onSliderChanged(int new_value) {
 
 void FileSlider::updateValueLabel() {
   std::ostringstream oss;
-  oss << value();
+  oss << value() << "(" << file_nb << ")";
   value_label->setText(QString(oss.str().c_str()));
 }

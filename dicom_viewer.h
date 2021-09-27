@@ -87,6 +87,8 @@ private:
 
   void getWindow(double *min_value, double *max_value);
 
+  //int getFileNb();
+
   double getSlope();
   double getIntercept();
 

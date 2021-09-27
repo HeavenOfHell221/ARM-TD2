@@ -94,6 +94,7 @@ void DicomViewer::openDicom() {
 
   loadDicomImage();
   updateWindowSliders();
+  updateDefaultFileSlider();
   applyDefaultFileSlider();
   applyDefaultWindow();
   updateImage();
@@ -166,9 +167,9 @@ void DicomViewer::updateWindowSliders() {
   window_width_slider->setLimits(1.0, max_used_value - min_used_value);
 }
 
-void updateDefaultFileSlider() {
-  int file_nb = ;
-  file_finder_slider->setLimits(file_nb);
+void DicomViewer::updateDefaultFileSlider() {
+  std::cout << "File number: " << active_files.size() << std::endl;
+  file_finder_slider->setLimits(active_files.size());
 }
 
 void DicomViewer::loadDicomImage() {
@@ -255,6 +256,14 @@ void DicomViewer::getWindow(double *min_value, double *max_value) {
   *min_value = center - width / 2;
   *max_value = center + width / 2;
 }
+
+/*
+int getFileNb() {
+  return active_files.size();
+  //return curr_file;
+}
+*/
+
 
 double DicomViewer::getSlope() {
   return getField<double>(getDataset(), DcmTagKey(0x28, 0x1053));
