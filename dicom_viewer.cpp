@@ -47,15 +47,25 @@ DicomViewer::DicomViewer(QWidget *parent)
 DicomViewer::~DicomViewer() {}
 
 void DicomViewer::openDicom() {
-  QString fileName = QFileDialog::getOpenFileName(this, "Select one file to open", ".", "DICOM (*.dcm)");
+  QStringList fileNames = QFileDialog::getOpenFileNames(this, "Select one (or several) file(s) to open", ".", "DICOM (*.dcm)");
 
-  std::string path = fileName.toStdString();
-  OFCondition status;
-  status = active_file.loadFile(path.c_str());
-  if (status.bad()) {
-    QMessageBox::critical(this, "Failed to open file", path.c_str());
-    return;
+  active_files.clear();
+  curr_file = 0;
+
+  for (int i = 0; i < fileNames.length(); i++) {
+      std::string path = fileNames[i].toStdString();
+      OFCondition status;
+      active_files.push_back(DcmFileFormat());
+      status = active_files[i].loadFile(path.c_str());
+      if (status.bad()) {
+        QMessageBox::critical(this, "Failed to open file", path.c_str());
+        return;
+      }
+      // TODO: Check if image is the one after the previous one
   }
+
+  std::cout << "Images loaded: " << active_files.size() << std::endl;
+
   loadDicomImage();
   updateWindowSliders();
   applyDefaultWindow();
@@ -103,7 +113,7 @@ void DicomViewer::onWindowWidthChange(double new_window_width) {
   updateImage();
 }
 
-DcmDataset *DicomViewer::getDataset() { return active_file.getDataset(); }
+DcmDataset *DicomViewer::getDataset() { return active_files[curr_file].getDataset(); }
 
 void DicomViewer::updateWindowSliders() {
   double min_used_value, max_used_value;

@@ -34,13 +34,16 @@ private:
   ImageLabel *img_label;
 
   /// The current DcmFileFormat
-  DcmFileFormat active_file;
+  std::vector<DcmFileFormat> active_files;
 
   /// The active Dicom image
   DicomImage *image;
 
   /// The 8-bits image to be shown on screen
   uchar *img_data;
+
+  /// Current file number
+  int curr_file;
 
   /// Retrieve access to the dataset of current file
   DcmDataset *getDataset();
