@@ -1,7 +1,5 @@
 #include "dicom_viewer.h"
 
-#include <iostream>
-
 #include <QFileDialog>
 #include <QMenuBar>
 #include <QMessageBox>
@@ -22,8 +20,11 @@ DicomViewer::DicomViewer(QWidget *parent)
   // Using default values for limits, they are updated anyway once a file is loaded
   window_center_slider = new DoubleSlider("Window center", -1000.0, 1000.0);
   window_width_slider = new DoubleSlider("Window width", 1.0, 5000.0);
+  file_finder_slider = new FileSlider("Current file", 1);
   layout->addWidget(window_center_slider);
   layout->addWidget(window_width_slider);
+  layout->addWidget(file_finder_slider);
+  file_finder_slider->setVisible(false); // only one file
   layout->addWidget(img_label);
   widget->setLayout(layout);
   // Setting menu
@@ -40,6 +41,7 @@ DicomViewer::DicomViewer(QWidget *parent)
   // Sliders connection
   connect(window_center_slider, SIGNAL(valueChanged(double)), this, SLOT(onWindowCenterChange(double)));
   connect(window_width_slider, SIGNAL(valueChanged(double)), this, SLOT(onWindowWidthChange(double)));
+  connect(file_finder_slider, SIGNAL(valueChanged(int)), this, SLOT(onDisplayedFileChange(int)));
   DcmRLEDecoderRegistration::registerCodecs();
   DJDecoderRegistration::registerCodecs();
 }
@@ -101,6 +103,7 @@ void DicomViewer::openDicom() {
   curr_image = loadDicomImage(curr_file);
   curr_dataset = getDataset(curr_file);
   updateWindowSliders();
+  updateDefaultFileSlider();
   applyDefaultWindow();
   updateImage();
 }
@@ -176,12 +179,24 @@ void DicomViewer::onWindowWidthChange(double new_window_width) {
   (void)new_window_width;
   updateImage();
 }
+void DicomViewer::onDisplayedFileChange(int new_displayed_file) {
+  curr_file = new_displayed_file - 1;
+  loadDicomImage();
+  updateImage();
+}
 
 void DicomViewer::updateWindowSliders() {
   double min_used_value, max_used_value;
   getFrameMinMax(curr_file, &min_used_value, &max_used_value);
   window_center_slider->setLimits(min_used_value, max_used_value);
   window_width_slider->setLimits(1.0, max_used_value - min_used_value);
+}
+
+void DicomViewer::updateDefaultFileSlider() {
+  int file_number = getFileNb();
+  std::cout << "File number: " << active_files.size() << std::endl;
+  file_finder_slider->setVisible(file_number > 1);
+  file_finder_slider->setLimits(file_number);
 }
 
 DicomImage *DicomViewer::loadDicomImage(int id) {
@@ -214,6 +229,7 @@ void DicomViewer::updateImage() {
     img_label->setText("No available image");
     return;
   }
+
   // Set window
   double window_center = window_center_slider->value();
   double window_width = window_width_slider->value();
@@ -305,6 +321,10 @@ void DicomViewer::getWindow(double *min_value, double *max_value) {
   curr_image->getWindow(center, width);
   *min_value = center - width / 2;
   *max_value = center + width / 2;
+}
+
+int DicomViewer::getFileNb() {
+  return active_files.size();
 }
 
 double DicomViewer::getSlope() {

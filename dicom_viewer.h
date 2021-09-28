@@ -9,6 +9,7 @@
 
 #include "double_slider.h"
 #include "image_label.h"
+#include "file_slider.h"
 
 class DicomViewer : public QMainWindow {
   Q_OBJECT
@@ -24,6 +25,7 @@ public slots:
 
   void onWindowCenterChange(double new_window_center);
   void onWindowWidthChange(double new_window_width);
+  void onDisplayedFileChange(int new_displayed_file);
 
 private:
   QWidget *widget;
@@ -31,7 +33,7 @@ private:
   
   DoubleSlider *window_center_slider;
   DoubleSlider *window_width_slider;
-  
+  FileSlider *file_finder_slider;
   /// The area in which the image is shown
   ImageLabel *img_label;
 
@@ -59,6 +61,11 @@ private:
 
   void updateWindowSliders();
   void applyDefaultWindow();
+
+  /// Adjust the number of files
+  void updateDefaultFileSlider();
+
+  /// Update the image based on current status of the object
   void updateImage();
 
   std::string getPatientName();
@@ -76,6 +83,8 @@ private:
                           double *min_allowed_value, double *max_allowed_value);
 
   void getWindow(double *min_value, double *max_value);
+
+  int getFileNb();
 
   double getSlope();
   double getIntercept();
