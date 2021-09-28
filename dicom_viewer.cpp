@@ -55,7 +55,7 @@ void DicomViewer::openDicom() {
   // Auquel cas return
 
   active_files.clear();
-  curr_file = 0;
+  curr_file = -1;
   std::vector<int> ids;
   std::string patientName;
 
@@ -94,14 +94,7 @@ void DicomViewer::openDicom() {
       }
   }
 
-  if (curr_image != nullptr)
-    delete (curr_image);
-
-  if(curr_dataset != nullptr)
-    delete (curr_dataset);
-  
-  curr_image = loadDicomImage(curr_file);
-  curr_dataset = getDataset(curr_file);
+  displayImage(0);
   updateWindowSliders();
   updateDefaultFileSlider();
   applyDefaultWindow();
@@ -130,23 +123,14 @@ void DicomViewer::save() {
 void DicomViewer::showStats() {
   std::ostringstream msg_oss;
 
-  /*
-
-    TODO Gabriel :
-
-    - Number of slices -> getNumberSlices();
-    - Current frame min/max values used -> getFrameMinMax(...)
-    - Collection min/max values used -> getCollectionMinMax(...)
-  */
-  msg_oss << "----- Global information -----" << std::endl;
+  msg_oss << "-------- Global information --------" << std::endl;
   msg_oss << "Number of slices: " << getNumberActiveFiles() << std::endl;
-
   double min_used_value, max_used_value, min_allowed_value, max_allowed_value;
   getCollectionMinMax(&min_used_value, &max_used_value, &min_allowed_value, &max_allowed_value);
   msg_oss << "Extremum collection allowed values: [" << min_allowed_value << ", " << max_allowed_value << "]" << std::endl;
   msg_oss << "Extremum collection used values: [" << min_used_value << ", " << max_used_value << "]" << std::endl;
 
-  msg_oss << "\n----- Current slice information -----" << std::endl;
+  msg_oss << "\n-------- Current slice information --------" << std::endl;
   msg_oss << "Patient: " << getPatientName() << std::endl;
   msg_oss << "Instance number: " << getInstanceNumber() << std::endl;
   msg_oss << "Acquisition number: " << getAcquisitionNumber() << std::endl;
@@ -180,9 +164,8 @@ void DicomViewer::onWindowWidthChange(double new_window_width) {
   updateImage();
 }
 void DicomViewer::onDisplayedFileChange(int new_displayed_file) {
-  curr_file = new_displayed_file - 1;
-  curr_image = loadDicomImage(curr_file);
-  curr_dataset = getDataset(curr_file);
+  displayImage(new_displayed_file - 1);
+  updateWindowSliders();
   updateImage();
 }
 
@@ -223,6 +206,17 @@ DcmDataset *DicomViewer::getDataset(int id) {
 void DicomViewer::applyDefaultWindow() {
   window_center_slider->setValue(getWindowCenter());
   window_width_slider->setValue(getWindowWidth());
+}
+
+void DicomViewer::displayImage(int id) {
+  if(id == curr_file)
+    return;
+  if (curr_image != nullptr)
+    delete (curr_image);
+ 
+  curr_file = id;
+  curr_image = loadDicomImage(id);
+  curr_dataset = getDataset(id);
 }
 
 void DicomViewer::updateImage() {

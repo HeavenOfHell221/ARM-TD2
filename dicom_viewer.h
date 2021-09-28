@@ -67,6 +67,7 @@ private:
 
   /// Update the image based on current status of the object
   void updateImage();
+  void displayImage(int id);
 
   std::string getPatientName();
   std::string getPatientName(int id);
