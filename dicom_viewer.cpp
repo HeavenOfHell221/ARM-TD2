@@ -24,6 +24,7 @@ DicomViewer::DicomViewer(QWidget *parent)
   layout->addWidget(window_center_slider);
   layout->addWidget(window_width_slider);
   layout->addWidget(file_finder_slider);
+  file_finder_slider->setVisible(false); // only one file
   layout->addWidget(img_label);
   widget->setLayout(layout);
   // Setting menu
@@ -168,6 +169,7 @@ void DicomViewer::updateWindowSliders() {
 void DicomViewer::updateDefaultFileSlider() {
   int file_number = getFileNb();
   std::cout << "File number: " << active_files.size() << std::endl;
+  file_finder_slider->setVisible(file_number > 1);
   file_finder_slider->setLimits(file_number);
 }
 

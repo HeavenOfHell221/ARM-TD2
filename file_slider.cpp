@@ -46,6 +46,6 @@ void FileSlider::onSliderChanged(int new_value) {
 
 void FileSlider::updateValueLabel() {
   std::ostringstream oss;
-  oss << value() << "(" << file_nb << ")";
+  oss << value() << " (" << file_nb << ")";
   value_label->setText(QString(oss.str().c_str()));
 }
