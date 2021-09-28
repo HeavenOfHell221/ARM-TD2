@@ -26,15 +26,16 @@ FileSlider::FileSlider(const QString &slider_name, int file_nb, QWidget *parent)
 
 FileSlider::~FileSlider() {}
 
-int FileSlider::value() { return slider->value(); }
-
-void FileSlider::setValue(int new_value) {
-  slider->setValue(new_value);
+int FileSlider::value() {
+  return slider->value();
 }
+
+void FileSlider::setValue(int new_value) { slider->setValue(new_value); }
 
 void FileSlider::setLimits(int file_nb1) {
   file_nb = file_nb1;
   slider->setValue(1);
+  slider->setMaximum(file_nb1);
   updateValueLabel();
 }
 

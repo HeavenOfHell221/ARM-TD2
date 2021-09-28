@@ -1,7 +1,5 @@
 #include "dicom_viewer.h"
 
-#include <iostream>
-
 #include <QFileDialog>
 #include <QMenuBar>
 #include <QMessageBox>
@@ -153,7 +151,8 @@ void DicomViewer::onWindowWidthChange(double new_window_width) {
   updateImage();
 }
 void DicomViewer::onDisplayedFileChange(int new_displayed_file) {
-  curr_file = new_displayed_file;
+  curr_file = new_displayed_file - 1;
+  loadDicomImage();
   updateImage();
 }
 
@@ -168,8 +167,9 @@ void DicomViewer::updateWindowSliders() {
 }
 
 void DicomViewer::updateDefaultFileSlider() {
+  int file_number = getFileNb();
   std::cout << "File number: " << active_files.size() << std::endl;
-  file_finder_slider->setLimits(active_files.size());
+  file_finder_slider->setLimits(file_number);
 }
 
 void DicomViewer::loadDicomImage() {
@@ -204,6 +204,7 @@ void DicomViewer::updateImage() {
     img_label->setText("No available image");
     return;
   }
+
   // Set window
   double window_center = window_center_slider->value();
   double window_width = window_width_slider->value();
@@ -257,13 +258,9 @@ void DicomViewer::getWindow(double *min_value, double *max_value) {
   *max_value = center + width / 2;
 }
 
-/*
-int getFileNb() {
+int DicomViewer::getFileNb() {
   return active_files.size();
-  //return curr_file;
 }
-*/
-
 
 double DicomViewer::getSlope() {
   return getField<double>(getDataset(), DcmTagKey(0x28, 0x1053));
