@@ -5,6 +5,11 @@
 #include <QSlider>
 #include <QWidget>
 
+/// A class implementing a slider for navigate in differents files with:
+/// - A name shown in a label
+/// - An int slider
+/// - The name of the file shown in a label
+
 class FileSlider : public QWidget {
   Q_OBJECT
 public:

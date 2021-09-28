@@ -93,7 +93,6 @@ void DicomViewer::openDicom() {
   loadDicomImage();
   updateWindowSliders();
   updateDefaultFileSlider();
-  applyDefaultFileSlider();
   applyDefaultWindow();
   updateImage();
 }
@@ -193,10 +192,6 @@ void DicomViewer::loadDicomImage() {
 void DicomViewer::applyDefaultWindow() {
   window_center_slider->setValue(getWindowCenter());
   window_width_slider->setValue(getWindowWidth());
-}
-
-void DicomViewer::applyDefaultFileSlider() {
-  file_finder_slider->setValue(1);
 }
 
 void DicomViewer::updateImage() {

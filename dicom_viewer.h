@@ -62,7 +62,7 @@ private:
   /// Import the default parameters from the DicomImage
   void applyDefaultWindow();
 
-  void applyDefaultFileSlider();
+  /// Adjust the number of files
   void updateDefaultFileSlider();
 
   /// Update the image based on current status of the object
