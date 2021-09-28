@@ -28,56 +28,52 @@ public slots:
 private:
   QWidget *widget;
   QVBoxLayout *layout;
+  
   DoubleSlider *window_center_slider;
   DoubleSlider *window_width_slider;
+  
   /// The area in which the image is shown
   ImageLabel *img_label;
 
-  /// The current DcmFileFormat
+  /// Collection des fichiers .dcm ouverts par l'utilisateur
   std::vector<DcmFileFormat> active_files;
 
-  /// The active Dicom image
-  DicomImage *image;
+  /// DicomImage actuellement affiché à l'écran
+  DicomImage *curr_image;
 
-  /// The 8-bits image to be shown on screen
-  uchar *img_data;
+  /// Dataset du fichier .dcm courant
+  /// active_files[curr_file].getDataset();
+  DcmDataset *curr_dataset;
 
-  /// Current file number
-  int curr_file;
+  /// L'ID du fichier .dcm courant
+  /// Utilisé comme ID dans la liste active_files pour récupérer le fichier .dcm
+  int curr_file; 
 
-  /// Retrieve access to the dataset of current file
-  DcmDataset *getDataset();
+  /// active_files.size()
+  int getNumberActiveFiles();
+
+  uchar *image_data;
+
   DcmDataset *getDataset(int id);
+  DicomImage *loadDicomImage(int id);
 
-  /// Adjust the size of the window based on file content
   void updateWindowSliders();
-
-  /// Load the DicomImage from the active slice
-  /// If there are no active slice available, set image to nullptr
-  void loadDicomImage();
-
-  /// Import the default parameters from the DicomImage
   void applyDefaultWindow();
-
-  /// Update the image based on current status of the object
   void updateImage();
 
-  /// Retrieve patient name from active file
-  /// return 'FAIL' if no active file is found
   std::string getPatientName();
   std::string getPatientName(int id);
-
-  /// Retrieve image from active file, converting to appropriate transfer syntax
-  /// return nullptr on failure
-  DicomImage *getDicomImage();
 
   /// Convert current Dicom Image to a QImage according to actual parameters
   QImage getQImage();
 
   /// Extract min (and max) used (and allowed) values
-  void getMinMax(double *min_used_value, double *max_used_value,
+  void getFrameMinMax(int id, double *min_used_value, double *max_used_value,
                  double *min_allowed_value = nullptr,
                  double *max_allowed_value = nullptr);
+
+  void getCollectionMinMax(double *min_used_value, double *max_used_value, 
+                          double *min_allowed_value, double *max_allowed_value);
 
   void getWindow(double *min_value, double *max_value);
 

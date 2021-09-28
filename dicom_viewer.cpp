@@ -10,7 +10,7 @@
 #include "dcmtk/dcmjpeg/djdecode.h"
 
 DicomViewer::DicomViewer(QWidget *parent)
-    : QMainWindow(parent), image(nullptr), img_data(nullptr) {
+    : QMainWindow(parent), curr_image(nullptr), curr_dataset(nullptr), image_data(nullptr) {
   // Setting layout
   widget = new QWidget();
   setCentralWidget(widget);
@@ -49,31 +49,34 @@ DicomViewer::~DicomViewer() {}
 void DicomViewer::openDicom() {
   QStringList fileNames = QFileDialog::getOpenFileNames(this, "Select one (or several) file(s) to open", ".", "DICOM (*.dcm)");
 
+  // TODO : Tester si la liste fileNames n'est pas vide
+  // Auquel cas return
+
   active_files.clear();
   curr_file = 0;
   std::vector<int> ids;
   std::string patientName;
 
   for (int i = 0; i < fileNames.length(); i++) {
-      std::string path = fileNames[i].toStdString();
-      OFCondition status;
-      active_files.push_back(DcmFileFormat());
-      status = active_files[i].loadFile(path.c_str());
-      if (status.bad()) {
-        QMessageBox::critical(this, "Failed to open file", path.c_str());
+    std::string path = fileNames[i].toStdString();
+    OFCondition status;
+    active_files.push_back(DcmFileFormat());
+    status = active_files[i].loadFile(path.c_str());
+    if (status.bad()) {
+      QMessageBox::critical(this, "Failed to open file", path.c_str());
+      return;
+    }
+
+    if (i == 0)
+        patientName = getPatientName(0);
+    else if (patientName != getPatientName(i)) {
+        std::cerr << "File #" << ids[i] << " (" << path << ") doesn't have the same patient!" << std::endl;
         return;
-      }
+    }
 
-      if (i == 0)
-          patientName = getPatientName(0);
-      else if (patientName != getPatientName(i)) {
-          std::cerr << "File #" << ids[i] << " (" << path << ") doesn't have the same patient!" << std::endl;
-          return;
-      }
-
-      int val = atoi(getInstanceNumber(i).c_str());
-      int index = BinarySearch(ids, val);
-      ids.insert(ids.begin() + index, val);
+    int val = atoi(getInstanceNumber(i).c_str());
+    int index = BinarySearch(ids, val);
+    ids.insert(ids.begin() + index, val);
   }
 
   for (int i = 1; i < fileNames.length() - 1; i++) {
@@ -89,7 +92,14 @@ void DicomViewer::openDicom() {
       }
   }
 
-  loadDicomImage();
+  if (curr_image != nullptr)
+    delete (curr_image);
+
+  if(curr_dataset != nullptr)
+    delete (curr_dataset);
+  
+  curr_image = loadDicomImage(curr_file);
+  curr_dataset = getDataset(curr_file);
   updateWindowSliders();
   applyDefaultWindow();
   updateImage();
@@ -116,18 +126,36 @@ void DicomViewer::save() {
 
 void DicomViewer::showStats() {
   std::ostringstream msg_oss;
+
+  /*
+
+    TODO Gabriel :
+
+    - Number of slices -> getNumberSlices();
+    - Current frame min/max values used -> getFrameMinMax(...)
+    - Collection min/max values used -> getCollectionMinMax(...)
+  */
+  msg_oss << "----- Global information -----" << std::endl;
+  msg_oss << "Number of slices: " << getNumberActiveFiles() << std::endl;
+
+  double min_used_value, max_used_value, min_allowed_value, max_allowed_value;
+  getCollectionMinMax(&min_used_value, &max_used_value, &min_allowed_value, &max_allowed_value);
+  msg_oss << "Extremum collection allowed values: [" << min_allowed_value << ", " << max_allowed_value << "]" << std::endl;
+  msg_oss << "Extremum collection used values: [" << min_used_value << ", " << max_used_value << "]" << std::endl;
+
+  msg_oss << "\n----- Current slice information -----" << std::endl;
   msg_oss << "Patient: " << getPatientName() << std::endl;
   msg_oss << "Instance number: " << getInstanceNumber() << std::endl;
   msg_oss << "Acquisition number: " << getAcquisitionNumber() << std::endl;
-  E_TransferSyntax original_syntax = getDataset()->getOriginalXfer();
+  E_TransferSyntax original_syntax = curr_dataset->getOriginalXfer();
   DcmXfer xfer(original_syntax);
   msg_oss << "Original transfer syntax: (" << original_syntax << ") " << xfer.getXferName() << std::endl;
-  DicomImage *image = getDicomImage();
+  DicomImage *image = curr_image;
   if (image) {
     msg_oss << "Nb frames: " << image->getFrameCount() << std::endl;
     msg_oss << "Size: " << image->getWidth() << "*" << image->getHeight() << "*" << image->getDepth() << std::endl;
     double min_used_value, max_used_value, min_allowed_value, max_allowed_value;
-    getMinMax(&min_used_value, &max_used_value, &min_allowed_value, &max_allowed_value);
+    getFrameMinMax(curr_file, &min_used_value, &max_used_value, &min_allowed_value, &max_allowed_value);
     msg_oss << "Allowed values: [" << min_allowed_value << ", " << max_allowed_value << "]" << std::endl;
     msg_oss << "Used values: [" << min_used_value << ", " << max_used_value << "]" << std::endl;
     msg_oss << "Window: [" << getWindowMin() << ", " << getWindowMax() << "]" << std::endl;
@@ -143,37 +171,37 @@ void DicomViewer::onWindowCenterChange(double new_window_center) {
   (void)new_window_center;
   updateImage();
 }
+
 void DicomViewer::onWindowWidthChange(double new_window_width) {
   (void)new_window_width;
   updateImage();
 }
 
-DcmDataset *DicomViewer::getDataset() { return getDataset(curr_file); }
-DcmDataset *DicomViewer::getDataset(int id) { return active_files[id].getDataset(); }
-
 void DicomViewer::updateWindowSliders() {
   double min_used_value, max_used_value;
-  getMinMax(&min_used_value, &max_used_value);
+  getFrameMinMax(curr_file, &min_used_value, &max_used_value);
   window_center_slider->setLimits(min_used_value, max_used_value);
   window_width_slider->setLimits(1.0, max_used_value - min_used_value);
 }
 
-void DicomViewer::loadDicomImage() {
-  DcmDataset *dataset = getDataset();
+DicomImage *DicomViewer::loadDicomImage(int id) {
+  DcmDataset *dataset = getDataset(id);
+  DicomImage *img = nullptr;
   if (dataset == nullptr) {
-    image = nullptr;
-    return;
+    return img;
   }
   // Changing syntax to a common one
   E_TransferSyntax wished_ts = EXS_LittleEndianExplicit;
-  OFCondition status = getDataset()->chooseRepresentation(wished_ts, NULL);
+  OFCondition status = dataset->chooseRepresentation(wished_ts, NULL);
   if (status.bad()) {
     QMessageBox::critical(this, "Dicom Image failure", status.text());
-    return;
+    return img;
   }
-  if (image != nullptr)
-    delete (image);
-  image = new DicomImage(getDataset(), wished_ts);
+  return new DicomImage(dataset, wished_ts);
+}
+
+DcmDataset *DicomViewer::getDataset(int id) {
+  return active_files[id].getDataset();
 }
 
 void DicomViewer::applyDefaultWindow() {
@@ -182,31 +210,38 @@ void DicomViewer::applyDefaultWindow() {
 }
 
 void DicomViewer::updateImage() {
-  if (image == nullptr) {
+  if (curr_image == nullptr) {
     img_label->setText("No available image");
     return;
   }
   // Set window
   double window_center = window_center_slider->value();
   double window_width = window_width_slider->value();
-  image->setWindow(window_center, window_width);
+  curr_image->setWindow(window_center, window_width);
   img_label->setImg(getQImage());
 }
 
-std::string DicomViewer::getPatientName() { return getPatientName(curr_file); }
-std::string DicomViewer::getPatientName(int id) { return getField<std::string>(getDataset(id), DCM_PatientName); }
+std::string DicomViewer::getPatientName() {
+  return getPatientName(curr_file);
+}
 
-DicomImage *DicomViewer::getDicomImage() { return image; }
+std::string DicomViewer::getPatientName(int id) {
+  return getField<std::string>(getDataset(id), DCM_PatientName); 
+}
+
+int DicomViewer::getNumberActiveFiles() {
+  return active_files.size();
+}
 
 QImage DicomViewer::getQImage() {
-  DicomImage *dicom = getDicomImage();
+  DicomImage *dicom = curr_image;
   int bits_per_pixel = 8;
   unsigned long data_size = dicom->getOutputDataSize(bits_per_pixel);
-  if (img_data)
-    free(img_data);
-  img_data = new unsigned char[data_size];
-  int status =
-      dicom->getOutputData((void *)img_data, data_size, bits_per_pixel);
+  if (image_data != nullptr) {
+    free(image_data);
+  }
+  image_data = new unsigned char[data_size];
+  int status = dicom->getOutputData((void *)image_data, data_size, bits_per_pixel);
   if (!status) {
     QMessageBox::critical(this, "Fatal error",
                           "Failed to get output data when getting QImage");
@@ -215,44 +250,77 @@ QImage DicomViewer::getQImage() {
   int width = dicom->getWidth();
   int height = dicom->getHeight();
 
-  return QImage(img_data, width, height, QImage::Format_Grayscale8);
+  return QImage(image_data, width, height, QImage::Format_Grayscale8);
 }
 
-void DicomViewer::getMinMax(double *min_used_value, double *max_used_value,
-                            double *min_allowed_value,
-                            double *max_allowed_value) {
-  getDicomImage()->getMinMaxValues(*min_used_value, *max_used_value, 0);
-  if (min_allowed_value != nullptr || max_allowed_value != nullptr) {
-    double tmp_min, tmp_max;
-    getDicomImage()->getMinMaxValues(tmp_min, tmp_max, 1);
-    if (min_allowed_value)
-      *min_allowed_value = tmp_min;
-    if (max_allowed_value)
-      *max_allowed_value = tmp_max;
+void DicomViewer::getCollectionMinMax(double *min_used_value, double *max_used_value, double *min_allowed_value, double *max_allowed_value) {
+  int N = getNumberActiveFiles();
+  
+  double min_used, max_used, min_allowed, max_allowed;
+
+  for(int id = 0; id < N; id++) {
+    DicomImage *img = loadDicomImage(id);  
+    img->getMinMaxValues(min_used, max_used, 0);
+    img->getMinMaxValues(min_allowed, max_allowed, 1);
+    delete(img);
+    if(id == 0) {
+      *min_used_value = min_used;
+      *max_used_value = max_used;
+      *min_allowed_value = min_allowed;
+      *max_allowed_value = max_allowed;
+    }
+    else {
+      if(min_used < *min_used_value)
+        *min_used_value = min_used;
+      if(max_used > *max_used_value)
+        *max_used_value = max_used;
+      if(min_allowed < *min_allowed_value)
+        *min_allowed_value = min_allowed;
+      if(max_allowed > *max_allowed_value)
+        *max_allowed_value = max_allowed;
+    }
   }
+}
+
+void DicomViewer::getFrameMinMax(int id, double *min_used_value, double *max_used_value, double *min_allowed_value, double *max_allowed_value) {
+  DicomImage *img = loadDicomImage(id);  
+  if(img == nullptr) {
+    // TODO ERROR
+    return;
+  } 
+  img->getMinMaxValues(*min_used_value, *max_used_value, 0);
+  if (min_allowed_value != nullptr || max_allowed_value != nullptr) {
+    double min_allowed, max_allowed;
+    img->getMinMaxValues(min_allowed, max_allowed, 1);
+    if (min_allowed_value)
+      *min_allowed_value = min_allowed;
+    if (max_allowed_value)
+      *max_allowed_value = max_allowed;
+  }
+  delete(img);
 }
 
 void DicomViewer::getWindow(double *min_value, double *max_value) {
   double center(0), width(0);
-  getDicomImage()->getWindow(center, width);
+  curr_image->getWindow(center, width);
   *min_value = center - width / 2;
   *max_value = center + width / 2;
 }
 
 double DicomViewer::getSlope() {
-  return getField<double>(getDataset(), DcmTagKey(0x28, 0x1053));
+  return getField<double>(curr_dataset, DcmTagKey(0x28, 0x1053));
 }
 
 double DicomViewer::getIntercept() {
-  return getField<double>(getDataset(), DcmTagKey(0x28, 0x1052));
+  return getField<double>(curr_dataset, DcmTagKey(0x28, 0x1052));
 }
 
 double DicomViewer::getWindowCenter() {
-  return getField<double>(getDataset(), DcmTagKey(0x28, 0x1050));
+  return getField<double>(curr_dataset, DcmTagKey(0x28, 0x1050));
 }
 
 double DicomViewer::getWindowWidth() {
-  return getField<double>(getDataset(), DcmTagKey(0x28, 0x1051));
+  return getField<double>(curr_dataset, DcmTagKey(0x28, 0x1051));
 }
 
 double DicomViewer::getWindowMin() {
