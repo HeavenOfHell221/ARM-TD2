@@ -132,8 +132,8 @@ void DicomViewer::showStats() {
 
   msg_oss << "\n-------- Current slice information --------" << std::endl;
   msg_oss << "Patient: " << getPatientName() << std::endl;
-  msg_oss << "Instance number: " << getInstanceNumber() << std::endl;
-  msg_oss << "Acquisition number: " << getAcquisitionNumber() << std::endl;
+  msg_oss << "Instance number: " << getInstanceNumber(curr_file) << std::endl;
+  msg_oss << "Acquisition number: " << getAcquisitionNumber(curr_file) << std::endl;
   E_TransferSyntax original_syntax = curr_dataset->getOriginalXfer();
   DcmXfer xfer(original_syntax);
   msg_oss << "Original transfer syntax: (" << original_syntax << ") " << xfer.getXferName() << std::endl;
@@ -177,7 +177,7 @@ void DicomViewer::updateWindowSliders() {
 }
 
 void DicomViewer::updateDefaultFileSlider() {
-  int file_number = getFileNb();
+  int file_number = getNumberActiveFiles();
   std::cout << "File number: " << active_files.size() << std::endl;
   file_finder_slider->setVisible(file_number > 1);
   file_finder_slider->setLimits(file_number);
@@ -318,10 +318,6 @@ void DicomViewer::getWindow(double *min_value, double *max_value) {
   *max_value = center + width / 2;
 }
 
-int DicomViewer::getFileNb() {
-  return active_files.size();
-}
-
 double DicomViewer::getSlope() {
   return getField<double>(curr_dataset, DcmTagKey(0x28, 0x1053));
 }
@@ -345,10 +341,7 @@ double DicomViewer::getWindowMax() {
   return getWindowCenter() + getWindowWidth() / 2;
 }
 
-std::string DicomViewer::getInstanceNumber() { return getInstanceNumber(curr_file); }
 std::string DicomViewer::getInstanceNumber(int id) { return getField<std::string>(getDataset(id), 0x20, 0x13); }
-
-std::string DicomViewer::getAcquisitionNumber() { return getAcquisitionNumber(curr_file); }
 std::string DicomViewer::getAcquisitionNumber(int id) { return getField<std::string>(getDataset(id), 0x20, 0x12); }
 
 template <> double getField<double>(DcmItem *item, const DcmTagKey &tag_key) {

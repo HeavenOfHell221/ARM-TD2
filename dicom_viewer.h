@@ -85,8 +85,6 @@ private:
 
   void getWindow(double *min_value, double *max_value);
 
-  int getFileNb();
-
   double getSlope();
   double getIntercept();
 
@@ -95,9 +93,7 @@ private:
   double getWindowMin();
   double getWindowMax();
 
-  std::string getInstanceNumber();
   std::string getInstanceNumber(int id);
-  std::string getAcquisitionNumber();
   std::string getAcquisitionNumber(int id);
 
   int BinarySearch(std::vector<int> list, int value);
