@@ -101,6 +101,7 @@ void DicomViewer::openDicom() {
     delete (curr_dataset);
   
   curr_image = loadDicomImage(curr_file);
+  curr_dataset = getDataset(curr_file);
   updateWindowSliders();
   updateDefaultFileSlider();
   applyDefaultWindow();
@@ -181,6 +182,7 @@ void DicomViewer::onWindowWidthChange(double new_window_width) {
 void DicomViewer::onDisplayedFileChange(int new_displayed_file) {
   curr_file = new_displayed_file - 1;
   curr_image = loadDicomImage(curr_file);
+  curr_dataset = getDataset(curr_file);
   updateImage();
 }
 
@@ -234,7 +236,6 @@ void DicomViewer::updateImage() {
   double window_width = window_width_slider->value();
   curr_image->setWindow(window_center, window_width);
   img_label->setImg(getQImage());
-  curr_dataset = getDataset(curr_file);
 }
 
 std::string DicomViewer::getPatientName() {
