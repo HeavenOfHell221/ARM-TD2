@@ -11,6 +11,7 @@
 #include "image_label.h"
 #include "file_slider.h"
 #include "point_cloud_display.h"
+#include "three_dim_image.h"
 
 class DicomViewer : public QMainWindow {
   Q_OBJECT
@@ -57,6 +58,8 @@ private:
   int getNumberActiveFiles();
 
   uchar *image_data;
+
+  ThreeDimImage* images;
 
   DcmDataset *getDataset(int id);
   DicomImage *loadDicomImage(int id);

@@ -11,6 +11,7 @@ DicomViewer::DicomViewer(QWidget *parent)
     : QMainWindow(parent), curr_image(nullptr), curr_dataset(nullptr), image_data(nullptr) {
   // Setting layout
   widget = new QWidget();
+  images = new ThreeDimImage();
   setCentralWidget(widget);
   img_label = new ImageLabel(this);
   img_label->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
@@ -102,6 +103,7 @@ void DicomViewer::openDicom() {
   updateDefaultFileSlider();
   applyDefaultWindow();
   updateImage();
+  images->loadImages(active_files);
 }
 
 int DicomViewer::BinarySearch(std::vector<int> list, int value) {
