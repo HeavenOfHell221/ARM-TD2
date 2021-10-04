@@ -29,14 +29,16 @@ SOURCES += \
         dicom_viewer.cpp \
         image_label.cpp \
         double_slider.cpp \
-        file_slider.cpp
+        file_slider.cpp \
+        point_cloud_display.cpp
 
 
 HEADERS += \
         dicom_viewer.h \
         image_label.h \
         double_slider.h \
-        file_slider.h
+        file_slider.h \
+        point_cloud_display.h
 
 LIBS += \
         -ldcmdata \
