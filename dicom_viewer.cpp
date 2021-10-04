@@ -16,7 +16,7 @@ DicomViewer::DicomViewer(QWidget *parent)
   img_label->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
   img_label->setMinimumSize(200,200);
   img_label->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
-  layout = new QVBoxLayout();
+  layout = new QGridLayout();
   // Using default values for limits, they are updated anyway once a file is loaded
   window_center_slider = new DoubleSlider("Window center", -1000.0, 1000.0);
   window_width_slider = new DoubleSlider("Window width", 1.0, 5000.0);
@@ -44,6 +44,9 @@ DicomViewer::DicomViewer(QWidget *parent)
   connect(file_finder_slider, SIGNAL(valueChanged(int)), this, SLOT(onDisplayedFileChange(int)));
   DcmRLEDecoderRegistration::registerCodecs();
   DJDecoderRegistration::registerCodecs();
+
+  point_cloud = new PointCloudDisplay();
+  layout->addWidget(point_cloud);
 }
 
 DicomViewer::~DicomViewer() {}

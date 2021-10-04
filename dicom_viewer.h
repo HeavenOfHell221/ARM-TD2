@@ -10,6 +10,7 @@
 #include "double_slider.h"
 #include "image_label.h"
 #include "file_slider.h"
+#include "point_cloud_display.h"
 
 class DicomViewer : public QMainWindow {
   Q_OBJECT
@@ -29,7 +30,8 @@ public slots:
 
 private:
   QWidget *widget;
-  QVBoxLayout *layout;
+  QGridLayout *layout;
+  PointCloudDisplay *point_cloud;
   
   DoubleSlider *window_center_slider;
   DoubleSlider *window_width_slider;
