@@ -30,7 +30,8 @@ SOURCES += \
         image_label.cpp \
         double_slider.cpp \
         file_slider.cpp \
-        point_cloud_display.cpp
+        point_cloud_display.cpp \
+        three_dim_image.cpp
 
 
 HEADERS += \
@@ -38,7 +39,8 @@ HEADERS += \
         image_label.h \
         double_slider.h \
         file_slider.h \
-        point_cloud_display.h
+        point_cloud_display.h \
+        three_dim_image.h
 
 LIBS += \
         -ldcmdata \
