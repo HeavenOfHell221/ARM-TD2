@@ -63,6 +63,8 @@ void DicomViewer::openDicom() {
   std::vector<int> ids;
   std::string patientName;
 
+  std::vector<int> instance_number_tab;
+
   for (int i = 0; i < fileNames.length(); i++) {
     std::string path = fileNames[i].toStdString();
     OFCondition status;
@@ -82,8 +84,12 @@ void DicomViewer::openDicom() {
 
     int val = atoi(getInstanceNumber(i).c_str());
     int index = BinarySearch(ids, val);
+    //std::cout << "val: " << val << std::endl;
     ids.insert(ids.begin() + index, val);
+    instance_number_tab.insert(instance_number_tab.end(), val);
   }
+
+  std::vector<DcmFileFormat> sorted_active_files(active_files.size());
 
   for (int i = 1; i < fileNames.length() - 1; i++) {
       if (ids[i] == ids[i - 1] || ids[i] == ids[i + 1]) {
@@ -97,6 +103,12 @@ void DicomViewer::openDicom() {
           return;
       }
   }
+
+  for (int i = 0; i < fileNames.length(); i++) {
+    sorted_active_files.at(instance_number_tab[i] - 1) = active_files[i];
+  }
+  
+  active_files = sorted_active_files; // update active_files with sorted_active_files
 
   displayImage(0);
   updateWindowSliders();
