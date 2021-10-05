@@ -2,6 +2,7 @@
 #define POINT_CLOUD_DISPLAY_H
 
 #include <QMainWindow>
+#include <QColor>
 #include <QOpenGLWidget>
 #include <QOpenGLContext>
 #include <QOpenGLFunctions>

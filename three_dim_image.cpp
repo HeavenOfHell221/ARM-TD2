@@ -39,15 +39,13 @@ void ThreeDimImage::loadImages(std::vector<DcmFileFormat>& active_files) {
         int width = img->getWidth();
         int height = img->getHeight();
 
-        for(int x = 0; x < width; x++) 
-        {
-            for(int y = 0; y < height; y++) 
-            {
+        for(int x = 0; x < width; x++) {
+            for(int y = 0; y < height; y++) {
                 Voxel v_curr;
-                v_curr.color = image_data[x + width * y];
-                v_curr.x = ((x / (width-1.f)) * 2.f) - 1.f;
-                v_curr.y = ((y / (height-1.f)) * 2.f) - 1.f;
-                v_curr.z = ((i / (N-1.f)) * 2.f) - 1.f;
+                v_curr.color = image_data[x + width * y] / 255.f;
+                v_curr.x = ((x / (width-1.)) * 2) - 1;
+                v_curr.y = ((y / (height-1.)) * 2) - 1;
+                v_curr.z = ((i / (N-1.)) * 2) - 1;
                 _voxels.push_back(v_curr);
             }
         }
@@ -55,4 +53,8 @@ void ThreeDimImage::loadImages(std::vector<DcmFileFormat>& active_files) {
     }
     //std::cout << _voxels[0].x << _voxels[0].y << _voxels[0].z << std::endl;     
     //std::cout << _voxels[_voxels.size()-1].x << _voxels[_voxels.size()-1].y << _voxels[_voxels.size()-1].z << std::endl;     
+}
+
+std::vector<Voxel> ThreeDimImage::GetVoxels() {
+    return _voxels;
 }

@@ -5,17 +5,17 @@
 #include "dcmtk/dcmdata/dctk.h"
 #include "dcmtk/dcmimgle/dcmimage.h"
 
+struct Voxel {
+    double x, y, z;
+    float color;
+};
+
 class ThreeDimImage {
-
-    struct Voxel {
-        float x, y, z;
-        unsigned char color;
-    };
-
     public:
         ThreeDimImage();
         ~ThreeDimImage();
         void loadImages(std::vector<DcmFileFormat>& active_files);
+        std::vector<Voxel> GetVoxels();
     private:
         //std::vector<unsigned char*> _images;
         //unsigned char imageVector;
