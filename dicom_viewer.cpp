@@ -247,7 +247,13 @@ void DicomViewer::updateImage() {
 
   if (img_layout->count() == 1) {
     point_cloud = new PointCloudDisplay(images);
+    //point_cloud->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
+    point_cloud->setMinimumSize(200,200);
+    point_cloud->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
     img_layout->addWidget(point_cloud);
+    //img_layout->addWidget(point_cloud, Qt::AlignCenter);
+    //layout->addLayout(img_layout, layout->rowCount(), 0);
+    //widget->setLayout(layout);
   }
 }
 

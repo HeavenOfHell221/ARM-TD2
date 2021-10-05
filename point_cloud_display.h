@@ -12,6 +12,11 @@ public:
     PointCloudDisplay(ThreeDimImage *_images);
     void initializeGL();
     void paintGL();
+    void updateContent();
+
+protected slots:
+  void resizeEvent(QResizeEvent *event) override;
+
 private:
     ThreeDimImage *images;
 };
