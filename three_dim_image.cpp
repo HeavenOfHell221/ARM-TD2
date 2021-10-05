@@ -2,13 +2,16 @@
 
 
 ThreeDimImage::ThreeDimImage() {
-    _images = std::vector<unsigned char*>();
+    _voxels = std::vector<Voxel>();
 }
 
 void ThreeDimImage::loadImages(std::vector<DcmFileFormat>& active_files) {
-    _images.clear();
-    for(auto file : active_files) {
-        DcmDataset *dataset = file.getDataset();
+    _voxels.clear();
+
+    for(int i = 0; i < active_files.size(); i++) {
+        DcmFileFormat *file = &active_files[i];
+
+        DcmDataset *dataset = file->getDataset();
         
         if(dataset == nullptr) {
             // TODO
@@ -21,7 +24,7 @@ void ThreeDimImage::loadImages(std::vector<DcmFileFormat>& active_files) {
             // TODO
         }
 
-        DicomImage *img = new DicomImage(dataset, wished_ts);
+        DicomImage* img = new DicomImage(dataset, wished_ts);
 
         int bits_per_pixel = 8;
         unsigned long data_size = img->getOutputDataSize(bits_per_pixel);
@@ -30,6 +33,22 @@ void ThreeDimImage::loadImages(std::vector<DcmFileFormat>& active_files) {
         if (!status) {
             // TODO 
         }
-        _images.push_back(image_data);
+        
+        int width = img->getWidth();
+        int height = img->getHeight();
+
+        for(int x = 0; x < width; x++) 
+        {
+            for(int y = 0; y < height; y++) 
+            {
+                Voxel v_curr;
+                v_curr.color = image_data[x + width * y];
+                v_curr.x = ((x / (width-1.f)) - 1.f) * 2.f;
+                v_curr.y = ((y / (height-1.f)) - 1.f) * 2.f;
+                v_curr.depth = i;
+                _voxels.push_back(v_curr);
+            }
+        }
+        delete(img);
     }    
 }

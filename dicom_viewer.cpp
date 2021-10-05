@@ -62,6 +62,8 @@ void DicomViewer::openDicom() {
   std::vector<int> ids;
   std::string patientName;
 
+  std::vector<int> instance_number_tab;
+
   for (int i = 0; i < fileNames.length(); i++) {
     std::string path = fileNames[i].toStdString();
     OFCondition status;
@@ -73,30 +75,37 @@ void DicomViewer::openDicom() {
     }
 
     if (i == 0)
-        patientName = getPatientName(0);
+      patientName = getPatientName(0);
     else if (patientName != getPatientName(i)) {
-        std::cerr << "File #" << ids[i] << " (" << path << ") doesn't have the same patient!" << std::endl;
-        return;
+      std::cerr << "File #" << ids[i] << " (" << path << ") doesn't have the same patient!" << std::endl;
+      return;
     }
 
     int val = atoi(getInstanceNumber(i).c_str());
     int index = BinarySearch(ids, val);
+    //std::cout << "val: " << val << std::endl;
     ids.insert(ids.begin() + index, val);
+    instance_number_tab.insert(instance_number_tab.end(), val);
   }
+
+  std::vector<DcmFileFormat> sorted_active_files(active_files.size());
 
   for (int i = 1; i < fileNames.length() - 1; i++) {
-      if (ids[i] == ids[i - 1] || ids[i] == ids[i + 1]) {
-          std::cerr << "Duplicate element #" << ids[i] << std::endl;
-          return;
-      } else if (ids[i] != ids[i - 1] + 1) {
-          std::cerr << "Missing element #" << ids[i] + 1 << " (we have #" << ids[i] << ")" << std::endl;
-          return;
-      } else if (ids[i] != ids[i + 1] - 1) {
-          std::cerr << "Missing element #" << ids[i] << " (we have #" << ids[i] - 1 << ")" << std::endl;
-          return;
-      }
+    if (ids[i] == ids[i - 1] || ids[i] == ids[i + 1]) {
+      std::cerr << "Duplicate element #" << ids[i] << std::endl;
+      return;
+    } else if (ids[i] != ids[i - 1] + 1) {
+      std::cerr << "Missing element #" << ids[i] + 1 << " (we have #" << ids[i] << ")" << std::endl;
+      return;
+    } else if (ids[i] != ids[i + 1] - 1) {
+      std::cerr << "Missing element #" << ids[i] << " (we have #" << ids[i] - 1 << ")" << std::endl;
+      return;
+    }
   }
 
+  for (int i = 0; i < fileNames.length(); i++)
+    sorted_active_files.at(instance_number_tab[i] - 1) = active_files[i];
+  active_files = sorted_active_files; // update active_files with sorted_active_files
   images->loadImages(active_files);
 
   displayImage(0);
@@ -107,15 +116,15 @@ void DicomViewer::openDicom() {
 }
 
 int DicomViewer::BinarySearch(std::vector<int> list, int value) {
-    int min = 0;
-    int max = list.size() - 1;
-    while (min <= max) {
-        int v = floor((min + max) / 2);
-        if (list[v] < value)      min = v + 1;
-        else if (list[v] > value) max = v - 1;
-        else                      return v;
-    }
-    return min;
+  int min = 0;
+  int max = list.size() - 1;
+  while (min <= max) {
+    int v = floor((min + max) / 2);
+    if (list[v] < value)      min = v + 1;
+    else if (list[v] > value) max = v - 1;
+    else                      return v;
+  }
+  return min;
 }
 
 void DicomViewer::save() {
@@ -237,8 +246,8 @@ void DicomViewer::updateImage() {
   img_label->setImg(getQImage());
 
   if (img_layout->count() == 1) {
-      point_cloud = new PointCloudDisplay(images);
-      img_layout->addWidget(point_cloud);
+    point_cloud = new PointCloudDisplay(images);
+    img_layout->addWidget(point_cloud);
   }
 }
 
