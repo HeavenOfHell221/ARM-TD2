@@ -8,7 +8,9 @@ ThreeDimImage::ThreeDimImage() {
 void ThreeDimImage::loadImages(std::vector<DcmFileFormat>& active_files) {
     _voxels.clear();
 
-    for(int i = 0; i < active_files.size(); i++) {
+    const int N = active_files.size();
+
+    for(int i = 0; i < N; i++) {
         DcmFileFormat *file = &active_files[i];
 
         DcmDataset *dataset = file->getDataset();
@@ -43,12 +45,14 @@ void ThreeDimImage::loadImages(std::vector<DcmFileFormat>& active_files) {
             {
                 Voxel v_curr;
                 v_curr.color = image_data[x + width * y];
-                v_curr.x = ((x / (width-1.f)) - 1.f) * 2.f;
-                v_curr.y = ((y / (height-1.f)) - 1.f) * 2.f;
-                v_curr.depth = i;
+                v_curr.x = ((x / (width-1.f)) * 2.f) - 1.f;
+                v_curr.y = ((y / (height-1.f)) * 2.f) - 1.f;
+                v_curr.z = ((i / (N-1.f)) * 2.f) - 1.f;
                 _voxels.push_back(v_curr);
             }
         }
         delete(img);
-    }    
+    }
+    //std::cout << _voxels[0].x << _voxels[0].y << _voxels[0].z << std::endl;     
+    //std::cout << _voxels[_voxels.size()-1].x << _voxels[_voxels.size()-1].y << _voxels[_voxels.size()-1].z << std::endl;     
 }

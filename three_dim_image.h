@@ -8,7 +8,7 @@
 class ThreeDimImage {
 
     struct Voxel {
-        float x, y, depth;
+        float x, y, z;
         unsigned char color;
     };
 
