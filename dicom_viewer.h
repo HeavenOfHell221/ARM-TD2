@@ -32,6 +32,7 @@ public slots:
 private:
   QWidget *widget;
   QGridLayout *layout;
+  QHBoxLayout *img_layout;
   PointCloudDisplay *point_cloud;
   
   DoubleSlider *window_center_slider;

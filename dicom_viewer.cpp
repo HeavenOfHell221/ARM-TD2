@@ -26,7 +26,9 @@ DicomViewer::DicomViewer(QWidget *parent)
   layout->addWidget(window_width_slider);
   layout->addWidget(file_finder_slider);
   file_finder_slider->setVisible(false); // only one file
-  layout->addWidget(img_label);
+  img_layout = new QHBoxLayout();
+  img_layout->addWidget(img_label);
+  layout->addLayout(img_layout, layout->rowCount(), 0);
   widget->setLayout(layout);
   // Setting menu
   QMenu *file_menu = menuBar()->addMenu("&File");
@@ -45,9 +47,6 @@ DicomViewer::DicomViewer(QWidget *parent)
   connect(file_finder_slider, SIGNAL(valueChanged(int)), this, SLOT(onDisplayedFileChange(int)));
   DcmRLEDecoderRegistration::registerCodecs();
   DJDecoderRegistration::registerCodecs();
-
-  point_cloud = new PointCloudDisplay();
-  layout->addWidget(point_cloud);
 }
 
 DicomViewer::~DicomViewer() {}
@@ -98,12 +97,13 @@ void DicomViewer::openDicom() {
       }
   }
 
+  images->loadImages(active_files);
+
   displayImage(0);
   updateWindowSliders();
   updateDefaultFileSlider();
   applyDefaultWindow();
   updateImage();
-  images->loadImages(active_files);
 }
 
 int DicomViewer::BinarySearch(std::vector<int> list, int value) {
@@ -235,6 +235,11 @@ void DicomViewer::updateImage() {
   double window_width = window_width_slider->value();
   curr_image->setWindow(window_center, window_width);
   img_label->setImg(getQImage());
+
+  if (img_layout->count() == 1) {
+      point_cloud = new PointCloudDisplay(images);
+      img_layout->addWidget(point_cloud);
+  }
 }
 
 std::string DicomViewer::getPatientName() {
