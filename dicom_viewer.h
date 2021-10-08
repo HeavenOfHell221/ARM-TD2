@@ -28,6 +28,7 @@ public slots:
   void onWindowCenterChange(double new_window_center);
   void onWindowWidthChange(double new_window_width);
   void onDisplayedFileChange(int new_displayed_file);
+  void onAlphaChange(double new_alpha);
 
 private:
   QWidget *widget;
@@ -38,6 +39,7 @@ private:
   DoubleSlider *window_center_slider;
   DoubleSlider *window_width_slider;
   FileSlider *file_finder_slider;
+  DoubleSlider *threeD_alpha_slider;
   /// The area in which the image is shown
   ImageLabel *img_label;
 
@@ -70,6 +72,8 @@ private:
 
   /// Adjust the number of files
   void updateDefaultFileSlider();
+
+  void updateThreeDImage(double new_alpha);
 
   /// Update the image based on current status of the object
   void updateImage();

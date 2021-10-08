@@ -24,8 +24,28 @@ void PointCloudDisplay::paintGL() {
   glBegin(GL_POINTS);
   std::vector<Voxel> voxels = images->GetVoxels();
   for (unsigned long i = 0; i < voxels.size(); i++) {
-    glColor4f(voxels[i].color, voxels[i].color, voxels[i].color, 0.05f);
+    glColor4f(voxels[i].color, voxels[i].color, voxels[i].color, alpha);
     glVertex3d(voxels[i].x, voxels[i].y, voxels[i].z);
   }
   glEnd();
+}
+
+void PointCloudDisplay::setAlpha(float new_alpha) {
+  this->alpha = new_alpha;
+}
+
+double PointCloudDisplay::getAlpha() {
+  return this->alpha;
+}
+
+// rescaling
+void PointCloudDisplay::updateContent() {
+    int size = std::min(this->width(), this->height());
+    this->resize(size, size);
+}
+
+// rescaling
+void PointCloudDisplay::resizeEvent(QResizeEvent *event) {
+  (void)event;
+  updateContent();
 }

@@ -16,9 +16,16 @@ public:
     PointCloudDisplay(ThreeDimImage *_images);
     void initializeGL();
     void paintGL();
+    void updateContent();
+    void setAlpha(float new_alpha);
+    double getAlpha();
+
+protected slots:
+  void resizeEvent(QResizeEvent *event) override;
+
 private:
-    void lookAt(QVector3D eye, QVector3D target, QVector3D up);
     ThreeDimImage *images;
+    double alpha = 0.5;
 };
 
 #endif // POINT_CLOUD_DISPLAY_H

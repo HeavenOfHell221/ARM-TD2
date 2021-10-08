@@ -22,10 +22,14 @@ DicomViewer::DicomViewer(QWidget *parent)
   window_center_slider = new DoubleSlider("Window center", -1000.0, 1000.0);
   window_width_slider = new DoubleSlider("Window width", 1.0, 5000.0);
   file_finder_slider = new FileSlider("Current file", 1);
+  threeD_alpha_slider = new DoubleSlider("Alpha", 0.0, 1.0);
+  threeD_alpha_slider->setValue(0.5);
   layout->addWidget(window_center_slider);
   layout->addWidget(window_width_slider);
   layout->addWidget(file_finder_slider);
+  layout->addWidget(threeD_alpha_slider);
   file_finder_slider->setVisible(false); // only one file
+  threeD_alpha_slider->setVisible(false); // no file
   img_layout = new QHBoxLayout();
   img_layout->addWidget(img_label);
   layout->addLayout(img_layout, layout->rowCount(), 0);
@@ -44,6 +48,7 @@ DicomViewer::DicomViewer(QWidget *parent)
   // Sliders connection
   connect(window_center_slider, SIGNAL(valueChanged(double)), this, SLOT(onWindowCenterChange(double)));
   connect(window_width_slider, SIGNAL(valueChanged(double)), this, SLOT(onWindowWidthChange(double)));
+  connect(threeD_alpha_slider, SIGNAL(valueChanged(double)), this, SLOT(onAlphaChange(double)));
   connect(file_finder_slider, SIGNAL(valueChanged(int)), this, SLOT(onDisplayedFileChange(int)));
   DcmRLEDecoderRegistration::registerCodecs();
   DJDecoderRegistration::registerCodecs();
@@ -178,10 +183,15 @@ void DicomViewer::onWindowWidthChange(double new_window_width) {
   (void)new_window_width;
   updateImage();
 }
+
 void DicomViewer::onDisplayedFileChange(int new_displayed_file) {
   displayImage(new_displayed_file - 1);
   updateWindowSliders();
   updateImage();
+}
+
+void DicomViewer::onAlphaChange(double new_alpha) {
+  updateThreeDImage(new_alpha);
 }
 
 void DicomViewer::updateWindowSliders() {
@@ -211,6 +221,7 @@ DicomImage *DicomViewer::loadDicomImage(int id) {
     QMessageBox::critical(this, "Dicom Image failure", status.text());
     return img;
   }
+  threeD_alpha_slider->setVisible(getNumberActiveFiles() > 1);
   return new DicomImage(dataset, wished_ts);
 }
 
@@ -232,6 +243,11 @@ void DicomViewer::displayImage(int id) {
   curr_file = id;
   curr_image = loadDicomImage(id);
   curr_dataset = getDataset(id);
+}
+
+void DicomViewer::updateThreeDImage(double new_alpha) {
+  point_cloud->setAlpha(new_alpha);
+  point_cloud->paintGL();
 }
 
 void DicomViewer::updateImage() {
