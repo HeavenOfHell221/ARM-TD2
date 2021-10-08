@@ -45,7 +45,7 @@ void ThreeDimImage::loadImages(std::vector<DcmFileFormat>& active_files) {
                 Voxel v_curr;
                 v_curr.color = image_data[x + width * y] / 255.f;
                 v_curr.x = ((x / (width-1.)) * 2) - 1;
-                v_curr.y = ((y / (height-1.)) * 2) - 1;
+                v_curr.y = -((y / (height-1.)) * 2) + 1;
                 v_curr.z = ((i / (N-1.)) * 2) - 1;
                 _voxels.push_back(v_curr);
             }
