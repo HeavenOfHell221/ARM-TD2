@@ -14,7 +14,7 @@ DicomViewer::DicomViewer(QWidget *parent)
   images = new ThreeDimImage();
   setCentralWidget(widget);
   img_label = new ImageLabel(this);
-  img_label->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
+  img_label->setAlignment(Qt::AlignHCenter);
   img_label->setMinimumSize(200,200);
   img_label->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
   layout = new QGridLayout();
