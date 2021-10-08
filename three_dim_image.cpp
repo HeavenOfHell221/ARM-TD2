@@ -16,14 +16,15 @@ void ThreeDimImage::loadImages(std::vector<DcmFileFormat>& active_files) {
         DcmDataset *dataset = file->getDataset();
         
         if(dataset == nullptr) {
-            // TODO
+            std::cerr << "Error, dataset null" << std::endl;
+            exit(EXIT_FAILURE);
         }
         
         E_TransferSyntax wished_ts = EXS_LittleEndianExplicit;
         OFCondition status_ = dataset->chooseRepresentation(wished_ts, NULL);
         
         if(status_.bad()) {
-            // TODO
+            exit(EXIT_FAILURE);
         }
 
         DicomImage* img = new DicomImage(dataset, wished_ts);
@@ -33,7 +34,7 @@ void ThreeDimImage::loadImages(std::vector<DcmFileFormat>& active_files) {
         unsigned char* image_data = new unsigned char[data_size];
         int status = img->getOutputData((void *)image_data, data_size, bits_per_pixel);
         if (!status) {
-            // TODO 
+            exit(EXIT_FAILURE);
         }
         
         int width = img->getWidth();
