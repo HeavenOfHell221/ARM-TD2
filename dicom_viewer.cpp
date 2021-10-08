@@ -54,17 +54,19 @@ DicomViewer::~DicomViewer() {}
 void DicomViewer::openDicom() {
   QStringList fileNames = QFileDialog::getOpenFileNames(this, "Select one (or several) file(s) to open", ".", "DICOM (*.dcm)");
 
-  // TODO : Tester si la liste fileNames n'est pas vide
-  // Auquel cas return
+  if (fileNames.size() == 0) {
+    std::cerr << "None selected file"  << std::endl;
+    return;
+  }
 
   active_files.clear();
   curr_file = -1;
   std::vector<int> ids;
-  std::string patientName;
+  std::string patientName; 
 
   std::vector<int> instance_number_tab;
 
-  for (int i = 0; i < fileNames.length(); i++) {
+  for (int i = 0; i < fileNames.size(); i++) {
     std::string path = fileNames[i].toStdString();
     OFCondition status;
     active_files.push_back(DcmFileFormat());
@@ -83,14 +85,13 @@ void DicomViewer::openDicom() {
 
     int val = atoi(getInstanceNumber(i).c_str());
     int index = BinarySearch(ids, val);
-    //std::cout << "val: " << val << std::endl;
     ids.insert(ids.begin() + index, val);
     instance_number_tab.insert(instance_number_tab.end(), val);
   }
 
   std::vector<DcmFileFormat> sorted_active_files(active_files.size());
 
-  for (int i = 1; i < fileNames.length() - 1; i++) {
+  for (int i = 1; i < fileNames.size() - 1; i++) {
     if (ids[i] == ids[i - 1] || ids[i] == ids[i + 1]) {
       std::cerr << "Duplicate element #" << ids[i] << std::endl;
       return;
@@ -102,12 +103,12 @@ void DicomViewer::openDicom() {
       return;
     }
   }
-
-  for (int i = 0; i < fileNames.length(); i++)
-    sorted_active_files.at(instance_number_tab[i] - 1) = active_files[i];
+  
+  for (int i = 0; i < fileNames.size(); i++)
+    sorted_active_files.at(instance_number_tab[i] - ids[0]) = active_files[i];
   active_files = sorted_active_files; // update active_files with sorted_active_files
-  images->loadImages(active_files);
 
+  images->loadImages(active_files);
   displayImage(0);
   updateWindowSliders();
   updateDefaultFileSlider();
@@ -247,13 +248,9 @@ void DicomViewer::updateImage() {
 
   if (img_layout->count() == 1) {
     point_cloud = new PointCloudDisplay(images);
-    //point_cloud->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
     point_cloud->setMinimumSize(200,200);
     point_cloud->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
     img_layout->addWidget(point_cloud);
-    //img_layout->addWidget(point_cloud, Qt::AlignCenter);
-    //layout->addLayout(img_layout, layout->rowCount(), 0);
-    //widget->setLayout(layout);
   }
 }
 

@@ -51,8 +51,6 @@ void ThreeDimImage::loadImages(std::vector<DcmFileFormat>& active_files) {
         }
         delete(img);
     }
-    //std::cout << _voxels[0].x << _voxels[0].y << _voxels[0].z << std::endl;     
-    //std::cout << _voxels[_voxels.size()-1].x << _voxels[_voxels.size()-1].y << _voxels[_voxels.size()-1].z << std::endl;     
 }
 
 std::vector<Voxel> ThreeDimImage::GetVoxels() {
